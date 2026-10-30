@@ -382,3 +382,11 @@ body.swap-mode .disc.swap-picked {
   box-shadow: 0 0 0 3px rgba(255,152,0,.28);
   transform: scale(1.04);
 }
+
+/* 屏蔽长按系统菜单 */
+.disc, .disc * , #lightbox img {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
