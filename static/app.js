@@ -214,40 +214,37 @@ function moveDisc(src, targetShelfId, targetLayerId, targetDiscId) {
   if (!sSrc) return;
   const lSrc = sSrc.layers.find((x) => x.id === layerId);
   if (!lSrc) return;
-  const disc = lSrc.discs.find((x) => x.id === discId);
-  if (!disc) return;
+  const srcIdx = lSrc.discs.findIndex((d) => d.id === discId);
+  if (srcIdx === -1) return;
 
   const sDst = state.shelves.find((x) => x.id === targetShelfId);
   if (!sDst) return;
   const lDst = sDst.layers.find((x) => x.id === targetLayerId);
   if (!lDst) return;
 
-  const srcIdx = lSrc.discs.findIndex((d) => d.id === discId);
-  lSrc.discs.splice(srcIdx, 1);
-
-  if (lDst.id === lSrc.id) {
-    // 同层：重排
-    if (targetDiscId && targetDiscId !== discId) {
-      const dstIdx = lDst.discs.findIndex((d) => d.id === targetDiscId);
-      lDst.discs.splice(dstIdx, 0, disc);
-    } else {
-      // 拖到空白处，放回原位
-      lSrc.discs.splice(srcIdx, 0, disc);
-    }
-  } else {
-    // 跨层
-    if (lDst.discs.length >= lDst.capacity) {
-      lSrc.discs.splice(srcIdx, 0, disc); // 还原
-      alert(`目标层已满（容量 ${lDst.capacity}）`);
-      return;
-    }
-    if (targetDiscId) {
-      const dstIdx = lDst.discs.findIndex((d) => d.id === targetDiscId);
-      lDst.discs.splice(dstIdx, 0, disc);
-    } else {
-      lDst.discs.push(disc);
-    }
+  // 拖到某张卡片上：两张卡片直接互换位置
+  if (targetDiscId && targetDiscId !== discId) {
+    const sT = state.shelves.find((s) => s.layers.some((l) => l.discs.some((d) => d.id === targetDiscId)));
+    const lT = sT && sT.layers.find((l) => l.discs.some((d) => d.id === targetDiscId));
+    if (!lT) return;
+    const tIdx = lT.discs.findIndex((d) => d.id === targetDiscId);
+    if (tIdx === -1 || tIdx === srcIdx && lT.id === lSrc.id) return;
+    const tmp = lSrc.discs[srcIdx];
+    lSrc.discs[srcIdx] = lT.discs[tIdx];
+    lT.discs[tIdx] = tmp;
+    render();
+    autoSave();
+    return;
   }
+
+  // 拖到空白处
+  if (lDst.id === lSrc.id) return; // 同层空白：原位不动
+  if (lDst.discs.length >= lDst.capacity) {
+    alert(`目标层已满（容量 ${lDst.capacity}）`);
+    return;
+  }
+  const disc = lSrc.discs.splice(srcIdx, 1)[0];
+  lDst.discs.push(disc);
   render();
   autoSave();
 }
