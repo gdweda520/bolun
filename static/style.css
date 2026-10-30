@@ -405,6 +405,3 @@ body.swap-mode .disc.swap-picked {
 
 /* 缩略图区域屏蔽长按：禁用该区域的手势与系统菜单 */
 .disc-img { touch-action: none; }
-
-/* 整张卡片屏蔽长按（代价：卡片区域内不能滑动页面） */
-.disc { touch-action: none; }
