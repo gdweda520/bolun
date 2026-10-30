@@ -402,3 +402,6 @@ body.swap-mode .disc.swap-picked {
   -webkit-user-select: none;
   user-select: none;
 }
+
+/* 缩略图区域屏蔽长按：禁用该区域的手势与系统菜单 */
+.disc-img { touch-action: none; }
