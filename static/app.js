@@ -319,6 +319,7 @@ function onTouchEnd(e) {
   if (!drag.active) {
     const lastTap = e.changedTouches && e.changedTouches[0];
     if (!lastTap) return;
+    if (!drag.fromThumb) return;  // 非缩略图区域交给浏览器原生 click，保留滚动
     if (Math.hypot(lastTap.clientX - drag.startX, lastTap.clientY - drag.startY) > 12) return;
     suppressClick = true;
     setTimeout(() => { suppressClick = false; }, 400);
@@ -590,7 +591,7 @@ function bindEvents() {
   document.addEventListener(
     "touchstart",
     (e) => {
-      if (e.touches.length === 1 && e.target.closest(".disc")) e.preventDefault();
+      if (e.touches.length === 1 && e.target.closest(".disc-img")) e.preventDefault();
     },
     { passive: false }
   );
