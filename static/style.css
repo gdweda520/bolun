@@ -372,3 +372,13 @@ body {
   opacity: .92; transform: translate(-50%, -50%) scale(1.06);
   box-shadow: 0 8px 22px rgba(0,0,0,.35); border-radius: 10px; background: #fff;
 }
+
+/* 排序模式 */
+.btn.btn-active { background: #ff9800; border-color: #ff9800; color: #fff; }
+body.swap-mode .disc { cursor: pointer; }
+body.swap-mode .disc.swap-selectable { outline: 2px dashed rgba(255,152,0,.75); }
+body.swap-mode .disc.swap-picked {
+  outline: 3px solid #ff9800;
+  box-shadow: 0 0 0 3px rgba(255,152,0,.28);
+  transform: scale(1.04);
+}
