@@ -384,10 +384,14 @@ body.swap-mode .disc.swap-picked {
 }
 
 /* 屏蔽长按系统菜单 */
-.disc, .disc * , #lightbox img {
+/* 只禁长按菜单，不要禁拖拽（-webkit-user-drag:none 会让卡片拖不动） */
+.disc, .disc * {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
+}
+#lightbox img {
+  -webkit-touch-callout: none;
   -webkit-user-drag: none;
 }
 
