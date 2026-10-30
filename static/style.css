@@ -390,3 +390,15 @@ body.swap-mode .disc.swap-picked {
   user-select: none;
   -webkit-user-drag: none;
 }
+
+/* 缩略图用背景图渲染，彻底避免长按系统菜单 */
+.disc-img.disc-thumb {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #f5f5f5;
+  cursor: zoom-in;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
