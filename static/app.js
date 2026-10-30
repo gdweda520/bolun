@@ -424,9 +424,10 @@ function renderDisc(shelfId, layerId, disc) {
     el.classList.add("swap-selectable");
     if (swapPick && swapPick.discId === disc.id) el.classList.add("swap-picked");
   }
+  // 用背景图而不是 <img>，长按不会触发系统图片菜单
   const imgHtml = disc.image
-    ? `<img class="disc-img" draggable="false" src="${disc.image}" alt="" />`
-    : `<div class="disc-img" style="display:flex;align-items:center;justify-content:center;font-size:40px;color:#bbb;">◯</div>`;
+    ? `<div class="disc-img disc-thumb" style="background-image:url('${disc.image}')"></div>`
+    : `<div class="disc-img" style="display:flex;align-items:center;justify-content:center;font-size:40px;color:#bbb;-webkit-touch-callout:none;">◯</div>`;
   const priceHtml = disc.price
     ? `<div class="disc-price">¥${escapeHtml(disc.price)}</div>`
     : "";
@@ -447,7 +448,7 @@ function renderDisc(shelfId, layerId, disc) {
   el.addEventListener("touchmove", onTouchMove, { passive: false });
   el.addEventListener("touchend", onTouchEnd);
   el.addEventListener("touchcancel", onTouchEnd);
-  const imgEl = el.querySelector("img.disc-img");
+  const imgEl = el.querySelector(".disc-thumb");
   if (imgEl) {
     imgEl.addEventListener("click", (e) => {
       e.stopPropagation();
