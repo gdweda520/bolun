@@ -5,6 +5,8 @@ let editingDisc = null;      // 当前编辑的波轮盘引用 {shelfId, layerId
 let editingContext = null;   // 新建时的位置 {shelfId, layerId}
 let tempImageUrl = "";
 let layerPages = {};         // 每层当前页码 {layerId: pageIndex}，UI 状态不持久化
+let swapMode = false;        // 排序模式：点两张卡片互换位置
+let swapPick = null;         // 已选中的第一张 {shelfId, layerId, discId}
 
 const DISCS_PER_PAGE = 6;    // 每页显示的波轮盘数量
 const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;  // 触摸设备禁用原生拖拽
@@ -255,6 +257,7 @@ let touchDrag = null;
 let suppressClick = false;
 
 function onTouchStart(e, el, shelfId, layerId, discId) {
+  if (swapMode) return;
   if (e.touches.length !== 1) return;
   const t = e.touches[0];
   const drag = {
@@ -417,6 +420,10 @@ function renderDisc(shelfId, layerId, disc) {
   el.dataset.shelf = shelfId;
   el.dataset.layer = layerId;
   el.dataset.disc = disc.id;
+  if (swapMode) {
+    el.classList.add("swap-selectable");
+    if (swapPick && swapPick.discId === disc.id) el.classList.add("swap-picked");
+  }
   const imgHtml = disc.image
     ? `<img class="disc-img" draggable="false" src="${disc.image}" alt="" />`
     : `<div class="disc-img" style="display:flex;align-items:center;justify-content:center;font-size:40px;color:#bbb;">◯</div>`;
@@ -432,6 +439,7 @@ function renderDisc(shelfId, layerId, disc) {
   el.addEventListener("dragstart", (e) => onDragStart(e, shelfId, layerId, disc.id));
   el.addEventListener("dragend", onDragEnd);
   el.addEventListener("click", () => {
+    if (swapMode) { handleSwapClick(shelfId, layerId, disc.id); return; }
     if (suppressClick) return;
     openDiscModal(shelfId, layerId, disc.id);
   });
@@ -443,6 +451,7 @@ function renderDisc(shelfId, layerId, disc) {
   if (imgEl) {
     imgEl.addEventListener("click", (e) => {
       e.stopPropagation();
+      if (swapMode) { handleSwapClick(shelfId, layerId, disc.id); return; }
       if (suppressClick) return;
       openLightbox(
         disc.image,
@@ -500,6 +509,50 @@ function escapeHtml(s) {
   return div.innerHTML;
 }
 
+// ---------- 排序模式（点两张卡片互换位置） ----------
+function toggleSwapMode() {
+  swapMode = !swapMode;
+  swapPick = null;
+  const btn = $("#btn-swap");
+  if (btn) btn.classList.toggle("btn-active", swapMode);
+  document.body.classList.toggle("swap-mode", swapMode);
+  $("#save-status").textContent = swapMode ? "排序模式：点第一张，再点第二张即互换" : "";
+  render();
+}
+
+function findDiscPos(shelfId, layerId, discId) {
+  const shelf = state.shelves.find((s) => s.id === shelfId);
+  if (!shelf) return null;
+  const layer = shelf.layers.find((l) => l.id === layerId);
+  if (!layer) return null;
+  const idx = layer.discs.findIndex((d) => d.id === discId);
+  if (idx === -1) return null;
+  return { layer, idx };
+}
+
+function handleSwapClick(shelfId, layerId, discId) {
+  if (!swapPick) {
+    swapPick = { shelfId, layerId, discId };
+    render();
+    return;
+  }
+  if (swapPick.discId === discId) {
+    swapPick = null;
+    render();
+    return;
+  }
+  const a = findDiscPos(swapPick.shelfId, swapPick.layerId, swapPick.discId);
+  const b = findDiscPos(shelfId, layerId, discId);
+  swapPick = null;
+  if (!a || !b) { render(); return; }
+  const tmp = a.layer.discs[a.idx];
+  a.layer.discs[a.idx] = b.layer.discs[b.idx];
+  b.layer.discs[b.idx] = tmp;
+  render();
+  autoSave();
+  $("#save-status").textContent = "排序模式：已互换，可继续点选";
+}
+
 // ---------- 事件绑定 ----------
 function bindEvents() {
   $("#btn-add-shelf").addEventListener("click", () => {
@@ -513,6 +566,7 @@ function bindEvents() {
   addShelf(n);
 });
   $("#btn-save").addEventListener("click", () => saveToServer(true));
+  $("#btn-swap").addEventListener("click", toggleSwapMode);
 
   $("#lightbox").addEventListener("click", closeLightbox);
   $("#lightbox-price-row").addEventListener("click", (e) => e.stopPropagation());
