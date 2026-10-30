@@ -568,6 +568,16 @@ function bindEvents() {
   $("#btn-save").addEventListener("click", () => saveToServer(true));
   $("#btn-swap").addEventListener("click", toggleSwapMode);
 
+  // 屏蔽卡片/大图上的长按菜单（安卓 contextmenu）与桌面右键菜单
+  document.addEventListener("contextmenu", (e) => {
+    if (e.target.closest(".disc") || e.target.closest("#lightbox")) e.preventDefault();
+  });
+
+  // 屏蔽 iOS 长按选中/放大镜
+  document.addEventListener("selectstart", (e) => {
+    if (e.target.closest(".disc")) e.preventDefault();
+  });
+
   $("#lightbox").addEventListener("click", closeLightbox);
   $("#lightbox-price-row").addEventListener("click", (e) => e.stopPropagation());
   $("#lightbox-price").addEventListener("change", saveLightboxPrice);
