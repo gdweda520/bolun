@@ -7,6 +7,7 @@ let tempImageUrl = "";
 let layerPages = {};         // 每层当前页码 {layerId: pageIndex}，UI 状态不持久化
 
 const DISCS_PER_PAGE = 6;    // 每页显示的波轮盘数量
+const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;  // 触摸设备禁用原生拖拽
 const $ = (sel) => document.querySelector(sel);
 const uid = () => Math.random().toString(36).slice(2, 10);
 
@@ -259,12 +260,23 @@ function onTouchStart(e, el, shelfId, layerId, discId) {
   const drag = {
     shelfId, layerId, discId, el,
     startX: t.clientX, startY: t.clientY,
-    active: false, timer: null,
+    active: false, timer: null, ghost: null,
   };
   drag.timer = setTimeout(() => {
     if (touchDrag !== drag) return;
     drag.active = true;
     el.classList.add("dragging");
+    // 跟手的半透明浮层，避免手指遮挡且能看出正在拖哪张
+    const rect = el.getBoundingClientRect();
+    const ghost = el.cloneNode(true);
+    ghost.classList.add("drag-ghost");
+    ghost.style.left = t.clientX + "px";
+    ghost.style.top = t.clientY + "px";
+    ghost.style.width = rect.width + "px";
+    ghost.style.height = rect.height + "px";
+    document.body.appendChild(ghost);
+    drag.ghost = ghost;
+    if (navigator.vibrate) navigator.vibrate(25);
   }, 350);
   touchDrag = drag;
 }
@@ -282,6 +294,10 @@ function onTouchMove(e) {
     return;
   }
   e.preventDefault();
+  if (touchDrag.ghost) {
+    touchDrag.ghost.style.left = t.clientX + "px";
+    touchDrag.ghost.style.top = t.clientY + "px";
+  }
   document.querySelectorAll(".layer-items").forEach((el) => el.classList.remove("drag-over"));
   const under = document.elementFromPoint(t.clientX, t.clientY);
   const box = under && under.closest(".layer-items");
@@ -294,6 +310,7 @@ function onTouchEnd(e) {
   clearTimeout(drag.timer);
   touchDrag = null;
   drag.el.classList.remove("dragging");
+  if (drag.ghost) { drag.ghost.remove(); drag.ghost = null; }
   document.querySelectorAll(".layer-items").forEach((el) => el.classList.remove("drag-over"));
   if (!drag.active) return;
   suppressClick = true;
@@ -396,12 +413,12 @@ function changePage(layerId, delta) {
 function renderDisc(shelfId, layerId, disc) {
   const el = document.createElement("div");
   el.className = "disc";
-  el.draggable = true;
+  el.draggable = !isTouchDevice;
   el.dataset.shelf = shelfId;
   el.dataset.layer = layerId;
   el.dataset.disc = disc.id;
   const imgHtml = disc.image
-    ? `<img class="disc-img" src="${disc.image}" alt="" />`
+    ? `<img class="disc-img" draggable="false" src="${disc.image}" alt="" />`
     : `<div class="disc-img" style="display:flex;align-items:center;justify-content:center;font-size:40px;color:#bbb;">◯</div>`;
   const priceHtml = disc.price
     ? `<div class="disc-price">¥${escapeHtml(disc.price)}</div>`
