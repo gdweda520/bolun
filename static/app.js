@@ -257,14 +257,15 @@ let touchDrag = null;
 let suppressClick = false;
 
 function onTouchStart(e, el, shelfId, layerId, discId) {
-  if (swapMode) return;
   if (e.touches.length !== 1) return;
   const t = e.touches[0];
   const drag = {
     shelfId, layerId, discId, el,
     startX: t.clientX, startY: t.clientY,
     active: false, timer: null, ghost: null,
+    fromThumb: !!(e.target.closest && e.target.closest(".disc-img")),
   };
+  if (swapMode) { touchDrag = drag; return; }  // 排序模式：只记录用于点选，不启动拖拽
   drag.timer = setTimeout(() => {
     if (touchDrag !== drag) return;
     drag.active = true;
@@ -315,7 +316,23 @@ function onTouchEnd(e) {
   drag.el.classList.remove("dragging");
   if (drag.ghost) { drag.ghost.remove(); drag.ghost = null; }
   document.querySelectorAll(".layer-items").forEach((el) => el.classList.remove("drag-over"));
-  if (!drag.active) return;
+  if (!drag.active) {
+    const lastTap = e.changedTouches && e.changedTouches[0];
+    if (!lastTap) return;
+    if (Math.hypot(lastTap.clientX - drag.startX, lastTap.clientY - drag.startY) > 12) return;
+    suppressClick = true;
+    setTimeout(() => { suppressClick = false; }, 400);
+    if (swapMode) { handleSwapClick(drag.shelfId, drag.layerId, drag.discId); return; }
+    const pos = findDiscPos(drag.shelfId, drag.layerId, drag.discId);
+    if (!pos) return;
+    const d = pos.layer.discs[pos.idx];
+    if (drag.fromThumb && d.image) {
+      openLightbox(d.image, d.name, d.diameter, drag.shelfId, drag.layerId, drag.discId, d.price);
+    } else {
+      openDiscModal(drag.shelfId, drag.layerId, drag.discId);
+    }
+    return;
+  }
   suppressClick = true;
   setTimeout(() => { suppressClick = false; }, 600);
 
@@ -573,7 +590,7 @@ function bindEvents() {
   document.addEventListener(
     "touchstart",
     (e) => {
-      if (e.touches.length === 1 && e.target.closest(".disc-img")) e.preventDefault();
+      if (e.touches.length === 1 && e.target.closest(".disc")) e.preventDefault();
     },
     { passive: false }
   );
