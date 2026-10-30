@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>波轮盘展示架</title>
+  <link rel="stylesheet" href="static/style.css?v=20261030" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>🧺 波轮盘展示架</h1>
+    <div class="actions">
+      <button id="btn-add-shelf" class="btn btn-primary">+ 添加货架</button>
+      <button id="btn-save" class="btn">💾 保存</button>
+      <span id="save-status" class="save-status"></span>
+    </div>
+  </header>
+
+  <main id="shelf-container" class="shelf-container">
+    <!-- 货架动态渲染 -->
+  </main>
+
+  <!-- 波轮盘编辑弹窗 -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-content">
+      <h3 id="modal-title">编辑波轮盘</h3>
+      <div class="form-row">
+        <label>名称</label>
+        <input id="in-name" type="text" placeholder="例如：8kg 波轮盘" />
+      </div>
+      <div class="form-row">
+        <label>直径 (mm)</label>
+        <input id="in-diameter" type="number" placeholder="例如：340" />
+      </div>
+      <div class="form-row">
+        <label>库存数量</label>
+        <input id="in-stock" type="number" min="0" value="0" />
+      </div>
+      <div class="form-row">
+        <label>价格 (元)</label>
+        <input id="in-price" type="text" placeholder="例如：35.00" />
+      </div>
+      <div class="form-row">
+        <label>图片</label>
+        <input id="in-image" type="file" accept="image/*" />
+        <div id="image-preview" class="image-preview"></div>
+      </div>
+      <div class="modal-actions">
+        <button id="btn-modal-cancel" class="btn">取消</button>
+        <button id="btn-modal-save" class="btn btn-primary">保存</button>
+        <button id="btn-modal-delete" class="btn btn-danger hidden">删除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 图片放大查看 -->
+  <div id="lightbox" class="lightbox hidden">
+    <img id="lightbox-img" alt="" />
+    <div id="lightbox-caption" class="lightbox-caption"></div>
+    <div id="lightbox-price-row" class="lightbox-price">
+      <label for="lightbox-price">价格 ¥</label>
+      <input id="lightbox-price" type="text" placeholder="填写价格（回车保存）" />
+    </div>
+  </div>
+
+  <script src="static/config.js?v=20261030"></script>
+  <script src="static/app.js?v=20261030"></script>
+</body>
+</html>
