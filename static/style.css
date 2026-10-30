@@ -362,3 +362,13 @@ body {
   .lightbox img { max-width: 94vw; max-height: 68vh; }
   .lightbox-price input { width: 58vw; max-width: 240px; font-size: 16px; }
 }
+
+/* 手机端拖拽：防长按菜单/选中，加入跟手浮层 */
+.disc { -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+.disc img { -webkit-user-drag: none; user-drag: none; -webkit-touch-callout: none; }
+.disc.dragging { opacity: .4; pointer-events: none; }
+.drag-ghost {
+  position: fixed; z-index: 99999; pointer-events: none;
+  opacity: .92; transform: translate(-50%, -50%) scale(1.06);
+  box-shadow: 0 8px 22px rgba(0,0,0,.35); border-radius: 10px; background: #fff;
+}
