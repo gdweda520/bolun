@@ -569,6 +569,15 @@ function bindEvents() {
   $("#btn-save").addEventListener("click", () => saveToServer(true));
   $("#btn-swap").addEventListener("click", toggleSwapMode);
 
+  // 缩略图区域消费 touchstart：屏蔽浏览器自带的长按菜单（如夸克/UC 的「标记广告」）
+  document.addEventListener(
+    "touchstart",
+    (e) => {
+      if (e.touches.length === 1 && e.target.closest(".disc-img")) e.preventDefault();
+    },
+    { passive: false }
+  );
+
   // 屏蔽卡片/大图上的长按菜单（安卓 contextmenu）与桌面右键菜单
   document.addEventListener("contextmenu", (e) => {
     if (e.target.closest(".disc") || e.target.closest("#lightbox")) e.preventDefault();
